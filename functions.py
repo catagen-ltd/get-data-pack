@@ -1,9 +1,17 @@
 from pathlib import Path
 import json
 import pandas as pd 
+from typing import Dict, List
+from typing import Iterable
+from __future__ import annotations
+from typing import NamedTuple
+
+
+
 
 PROJECT_DIR = Path(__file__).resolve().parent
 STATE = PROJECT_DIR / "state.json"
+CONSTANT_SENTINELS: tuple[float, ...] = (0.0, 1372.0)
 
 #
 def set_state(datalog_path: Path, mfc_path: Path) -> None:
@@ -169,4 +177,88 @@ def deduplicate_timestamps(data: pd.DataFrame) -> pd.DataFrame:
             .format(count=len(drop_indices))
         )
     return df
-    
+
+
+
+def build_output_headers(base_headers: List[str], additions: Dict[str, str]) -> List[str]:
+    ordered = base_headers.copy()
+    for new_col, reference in additions.items():
+        if reference not in ordered:
+            raise ValueError(f"Reference column '{reference}' not found while inserting '{new_col}'.")
+        if new_col in ordered:
+            ordered.remove(new_col)
+        ref_index = ordered.index(reference)
+        ordered.insert(ref_index + 1, new_col)
+    return ordered
+
+def replace_constant_numeric_columns(df: pd.DataFrame, values: Iterable[float] = CONSTANT_SENTINELS) -> pd.DataFrame:
+    """Replace numeric columns that are entirely one of the sentinel values with hyphens."""
+
+    result = df.copy()
+    numeric_columns = result.select_dtypes(include=["number"]).columns
+
+    for col in numeric_columns:
+        series = result[col]
+        non_na = series.dropna()
+        if non_na.empty:
+            continue
+
+        hyphenate = False
+
+        for sentinel in values:
+            if non_na.eq(sentinel).all():
+                hyphenate = True
+                break
+
+        if not hyphenate and non_na.lt(0).all():
+            hyphenate = True
+
+        if hyphenate:
+            result[col] = "-"
+
+    return result
+
+
+class DiscoveredFiles(NamedTuple):
+    """Container for categorized file paths from a raw data directory."""
+
+    mfc_files: list[Path]
+    datalog_files: list[Path]
+
+
+def discover_files(directory: Path) -> DiscoveredFiles:
+    """Scan directory and separate MFC files from datalog files.
+
+    Files are classified as MFC if their name (case-insensitive) contains "mfc".
+    Files with extensions .parquet, .csv, or .xlsx are skipped.
+    All other files are treated as datalog files.
+
+    Args:
+        directory: Path to the directory containing raw data files.
+
+    Returns:
+        DiscoveredFiles with separate lists for MFC and datalog file paths.
+    """
+    if not directory.is_dir():
+        raise ValueError(f"Path is not a directory: {directory}")
+
+    skip_extensions = {".parquet", ".csv", ".xlsx"}
+    mfc_files: list[Path] = []
+    datalog_files: list[Path] = []
+
+    for file_path in directory.iterdir():
+        if not file_path.is_file():
+            continue
+
+        if file_path.suffix.lower() in skip_extensions:
+            continue
+
+        if "mfc" in file_path.name.lower():
+            mfc_files.append(file_path)
+        else:
+            datalog_files.append(file_path)
+
+    return DiscoveredFiles(
+        mfc_files=sorted(mfc_files),
+        datalog_files=sorted(datalog_files),
+    )

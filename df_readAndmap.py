@@ -1,157 +1,143 @@
 import numpy as np
 import pandas as pd 
+import json
 from pathlib import Path
-from state import set_state, get_state_filepath, has_state
+from functions import set_state, get_state_filepath, has_state, build_output_headers
+from file_discovery import discover_files
+from typing import Dict, List
 
 
 if __name__ == "__main__":
-    filepath_input = Path(r"C:\LocalOnly\Data packs raw data\SCA005_SCA006_AgeingTuning_240925 41")
-    mfc_filepath_input = Path(r"C:\LocalOnly\Data packs raw data\SCA005_SCA006_AgeingTuning_240925_MFC 0")
-    FILEPATH = filepath_input.resolve()
-    MFC_FILEPATH = mfc_filepath_input.resolve()
-    print(FILEPATH) 
-    print(MFC_FILEPATH)
-    set_state(FILEPATH, MFC_FILEPATH)
+    # Load configuration from inputs.json
+    inputs_path = Path(__file__).parent / "inputs.json"
+    with open(inputs_path, encoding="utf-8") as f:
+        config = json.load(f)
+    
+    raw_data_dir = Path(config["Folder Path"])
+    data_pack_name = config["Data Pack Name"]
+    
+    # Discover and categorize files
+    discovered = discover_files(raw_data_dir)
+    
+    print(f"Found {len(discovered.mfc_files)} MFC file(s):")
+    for mfc in discovered.mfc_files:
+        print(f"  - {mfc.name}")
+    
+    print(f"\nFound {len(discovered.datalog_files)} datalog file(s):")
+    for datalog in discovered.datalog_files:
+        print(f"  - {datalog.name}")
 
 
     #make a list of columns input from gui an option also 
     #engineer_input_columns = []
-    preset_columns = [
-    0,   # A
-    1,   # B
-    3,   # D
-    4,   # E
-    5,   # F
-    6,   # G
-    39,  # AN
-    40,  # AO
-    41,  # AP
-    42,  # AQ
-    78,  # CA
-    79,  # CB
-    82,  # CE
-    83,  # CF
-    8,   # I
-    9,   # J
-    10,  # K
-    11,  # L
-    12,  # M
-    13,  # N
-    46,  # AU
-    47,  # AV
-    48,  # AW
-    49,  # AX
-    50,  # AY
-    51,  # AZ
-    52,  # BA
-    53,  # BB
-    54,  # BC
-    55,  # BD
-    56,  # BE
-    57,  # BF
-    58,  # BG
-    59,  # BH
-    106, # DB
-    107, # DC
-    108, # DD
-    109, # DE
-    110, # DF
-    111, # DG
-    112, # DH
-    113, # DI
-    114  # DJ
-    ]
+    preset_columns = config["Datalog columns"]
+    
+    additional_columns = config["Additional columns"]
+
 
 
     # make a preset headers list for scania and one that can be customised for the other customer data sets 
     #engineer_input_headers = [] ##make this an input from gui 
-    preset_colsMfc = [0, 2, 3, 11, 8, 10, 4, 13, 14, 22, 24, 21, 15]
+    preset_colsMfc = config["MFC columns"]
 
 
 
-    preset_headers = [
-    "Date/Time",
-    #"Time Step",
-    "Flow (g/s)",
-    "Cat 1 Inlet Analogue ETAS 1 (-)",
-    "Cat 1 Outlet Analogue ETAS 2 (-)",
-    "Cat 2 Inlet Analogue ETAS 3 (-)",
-    "Cat 2 Outlet Analogue ETAS 4 (-)",
-    "NB Sensor Cat 1 Mid Brick (V)",
-    "NB Sensor Cat 1 Outlet (V)",
-    "NB Sensor Cat 2 Mid Brick (V)",
-    "NB Sensor Cat 2 Outlet (V)",
-    "Cat 1 Inlet Digital ETAS 1 (-)",
-    "Cat 1 Outlet Digital ETAS 2 (-)",
-    "Cat 2 Inlet Digital ETAS 3 (-)",
-    "Cat 2 Outlet Digital ETAS 4 (-)",
-    "Cat 1 Inlet Gas Temperature (°C)",
-    "Cat 1 Bed 1 Centre (°C)",
-    "Cat 1 Bed 2 Centre (°C)",
-    "Cat 1 Bed 2 Circumference Door Side (°C)",
-    #"Cat 1 Bed 2 Circumference Machine Side (°C)",
-    "Cat 1 Midpoint Gas Temperature (°C)",
-    "Cat 1 Bed 3 Centre (°C)",
-    "Cat 1 Bed 4 Centre (°C)",
-    "Cat 1 Bed 5 Centre (°C)",
-    "Cat 1 Bed 5 Circumference Door Side (°C)",
-    #"Cat 1 Bed 5 Circumference Machine Side (°C)",
-    "Cat 1 Outlet Gas Temperature (°C)",
-    "Cat 2 Inlet Gas Temperature (°C)",
-    "Cat 2 Bed 1 Centre (°C)",
-    "Cat 2 Bed 2 Centre (°C)",
-    "Cat 2 Bed 2 Circumference Door Side (°C)",
-    #"Cat 2 Bed 2 Circumference Machine Side (°C)",
-    "Cat 2 Midpoint Gas Temperature (°C)",
-    "Cat 2 Bed 3 Centre (°C)",
-    "Cat 2 Bed 4 Centre (°C)",
-    "Cat 2 Bed 5 Centre (°C)",
-    "Cat 2 Bed 5 Circumference Door Side (°C)",
-    #"Cat 2 Bed 5 Circumference Machine Side (°C)",
-    "Cat 2 Outlet Gas Temperature (°C)",
-    "Water Concentration (%)",
-    "CH4 Concentration (ppm)",
-    "CO Concentration (%)",
-    "NO Concentration (ppm)",
-    "C3H6 Concentration (ppm)",
-    "CO2 Concentration(%)",
-    "NH3 Concentration (ppm)",
-    "N2O Concentration (ppm)",
-    "NO2 Concentration (ppm)"
-    ]
+    preset_headers = config["Datalog names"]
 
-    preset_headersMfc = [
-    "Date/Time",
-    "005 NG Injection (SLPM)",
-    "005 Air Injection (SLPM)",
-    "005 O2 Injection (SLPM)",
-    "006 Air Injection (SLPM)",
-    "006 NG Injection (SLPM)",
-    "006 O2 Injection (SLPM)",
-    "005 NG Injection Set Point (SLPM)",
-    "005 Air Injection Set Point (SLPM)",
-    "005 O2 Injection Set Point (SLPM)",
-    "006 Air Injection Set Point (SLPM)",
-    "006 NG Injection Set Point (SLPM)",
-    "006 O2 Injection Set Point (SLPM)"
-    ]
-
-    #check if file exists
-    if FILEPATH.exists():
-        print("file exists")
-    else:
-        print(f"file doesn't exist at {FILEPATH}")
-
-    #read in files
-    df = pd.read_csv(FILEPATH, sep="\t", usecols=preset_columns, parse_dates=True, low_memory=False, header=None, names=preset_headers)
-    dfMfc = pd.read_csv(MFC_FILEPATH, sep="\t", usecols=preset_colsMfc, parse_dates=True, low_memory=False, header=None, names=preset_headersMfc)
 
     
 
-    df.to_parquet(FILEPATH.with_suffix('.parquet'), index=False)
-    dfMfc.to_parquet(MFC_FILEPATH.with_suffix('.parquet'), index=False)
-    dfMfc.to_csv(MFC_FILEPATH.with_suffix('.csv'), index=False)
-    df.to_csv(FILEPATH.with_suffix('.csv'), index=False)
+
+    preset_headersMfc = config["MFC names"]
+
+
+    assert len(preset_columns) == len(preset_headers), "Preset columns and headers length mismatch"
+    assert len(preset_colsMfc) == len(preset_headersMfc), "Preset MFC columns and headers length mismatch"
+
+    output_headers = build_output_headers(preset_headers, additional_columns)
+
+    headerMap = dict(sorted(zip(preset_columns, preset_headers)))
+    headerMapMfc = dict(sorted(zip(preset_colsMfc, preset_headersMfc)))
+
+    usecolumns = list(headerMap.keys())
+    usecolumnsMfc = list(headerMapMfc.keys())
+    useHeaders = list(headerMap.values())
+    useHeadersMfc = list(headerMapMfc.values())
+    
+
+    # Read and concatenate all datalog files
+    print("\nReading datalog files...")
+    datalog_chunks = []
+    for datalog_path in discovered.datalog_files:
+        if not datalog_path.exists():
+            print(f"  Warning: {datalog_path.name} not found, skipping.")
+            continue
+        print(f"  Reading {datalog_path.name}...")
+        chunk = pd.read_csv(
+            datalog_path,
+            sep="\t",
+            usecols=usecolumns,
+            parse_dates=True,
+            low_memory=False,
+            header=None,
+            names=useHeaders,
+        )
+        datalog_chunks.append(chunk)
+    
+    if not datalog_chunks:
+        raise ValueError("No datalog files were successfully read.")
+    
+    df = pd.concat(datalog_chunks, ignore_index=True)
+    print(f"Combined datalog: {len(df)} rows")
+
+    # Read and concatenate all MFC files
+    print("\nReading MFC files...")
+    mfc_chunks = []
+    for mfc_path in discovered.mfc_files:
+        if not mfc_path.exists():
+            print(f"  Warning: {mfc_path.name} not found, skipping.")
+            continue
+        print(f"  Reading {mfc_path.name}...")
+        chunk = pd.read_csv(
+            mfc_path,
+            sep="\t",
+            usecols=usecolumnsMfc,
+            parse_dates=True,
+            low_memory=False,
+            header=None,
+            names=useHeadersMfc,
+        )
+        mfc_chunks.append(chunk)
+    
+    if not mfc_chunks:
+        raise ValueError("No MFC files were successfully read.")
+    
+    dfMfc = pd.concat(mfc_chunks, ignore_index=True)
+    print(f"Combined MFC: {len(dfMfc)} rows")
+
+    # Add additional columns
+    for new_column in additional_columns:
+        if new_column not in df.columns:
+            df[new_column] = "-"
+
+    df = df.reindex(columns=output_headers)
+    dfMfc = dfMfc.reindex(columns=preset_headersMfc)
+
+    # Determine output paths using Data Pack Name
+    datalog_output = raw_data_dir / f"{data_pack_name}"
+    mfc_output = raw_data_dir / f"{data_pack_name}_MFC"
+
+    print(f"\nWriting combined datalog to {datalog_output.name}...")
+    df.to_parquet(datalog_output.with_suffix('.parquet'), index=False)
+    df.to_csv(datalog_output.with_suffix('.csv'), index=False)
+    
+    print(f"Writing combined MFC to {mfc_output.name}...")
+    dfMfc.to_parquet(mfc_output.with_suffix('.parquet'), index=False)
+    dfMfc.to_csv(mfc_output.with_suffix('.csv'), index=False)
+
+    # Store paths in state for downstream processing
+    set_state(datalog_output, mfc_output)
+    print("\nProcessing complete!")
 
    
 
