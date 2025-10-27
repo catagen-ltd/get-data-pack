@@ -22,6 +22,24 @@ This tool combines multiple raw data files (datalog and MFC files) from a direct
 
 ## Getting Started
 
+### Prerequisites
+
+- **Python 3.9 or later** (recommended: Python 3.11.9)
+- **Windows OS** (batch files provided)
+
+### Quick Setup (First Time Only)
+
+1. **Run the setup script**:
+   ```
+   setup.bat
+   ```
+   This will:
+   - Check your Python version
+   - Create a virtual environment in the `venv` folder
+   - Install all required dependencies (pandas, numpy)
+
+2. The setup only needs to be run **once** when you first install the tool on a new machine.
+
 ### Step 1: Prepare Your Data
 
 1. Place all your raw data files in a single folder
@@ -116,13 +134,30 @@ This will insert a new column called "005 Bed 2 Circumference Machine Side (°C)
 
 ## Running the Tool
 
-### Step 1: Process Raw Data
+### Easy Way (Recommended)
 
-Run the first script to read and combine your files:
+Simply double-click or run:
+```
+run_tool.bat
+```
+
+This automatically activates the virtual environment and runs the data processing.
+
+### Manual Way
+
+If you prefer to run commands manually:
 
 ```powershell
+# Activate the virtual environment
+venv\Scripts\activate
+
+# Run the tool
 python df_readAndmap.py
 ```
+
+### Step 1: Process Raw Data (Automatic)
+
+The `run_tool.bat` script now handles both steps automatically:
 
 **What happens:**
 - Scans your folder for datalog and MFC files
@@ -132,17 +167,13 @@ python df_readAndmap.py
   - `{Data Pack Name}_DataPack.csv`
   - `{Data Pack Name}_MFC.parquet`
   - `{Data Pack Name}_MFC.csv`
+- **Then automatically runs step 2** (cleaning and finalization)
 
-### Step 2: Clean and Finalize Data
+### Step 2: Clean and Finalize Data (Automatic)
 
-Run the second script to sort, deduplicate, and clean:
-
-```powershell
-python loadMappeddata.py
-```
+Runs automatically after step 1 completes.
 
 **What happens:**
-- Loads the files created in Step 1
 - Sorts data chronologically
 - Adds "Time Step" column (0, 1, 2, 3...)
 - Detects and resolves duplicate timestamps
