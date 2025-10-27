@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd 
 import json
+import subprocess
+import sys
 from pathlib import Path
 from functions import set_state, get_state_filepath, has_state, build_output_headers
 from file_discovery import discover_files
@@ -14,7 +16,7 @@ if __name__ == "__main__":
         config = json.load(f)
     
     raw_data_dir = Path(config["Folder Path"])
-    data_pack_name = config["Data Pack Name"]
+    data_pack_name = Path(config["Data Pack Name"])
     
     # Discover and categorize files
     discovered = discover_files(raw_data_dir)
@@ -34,19 +36,11 @@ if __name__ == "__main__":
     
     additional_columns = config["Additional columns"]
 
-
-
     # make a preset headers list for scania and one that can be customised for the other customer data sets 
     #engineer_input_headers = [] ##make this an input from gui 
     preset_colsMfc = config["MFC columns"]
 
-
-
     preset_headers = config["Datalog names"]
-
-
-    
-
 
     preset_headersMfc = config["MFC names"]
 
@@ -56,6 +50,8 @@ if __name__ == "__main__":
 
     output_headers = build_output_headers(preset_headers, additional_columns)
 
+    # Create sorted mappings (pandas reads usecols in sorted order)
+    # Then we'll reindex to the desired output order
     headerMap = dict(sorted(zip(preset_columns, preset_headers)))
     headerMapMfc = dict(sorted(zip(preset_colsMfc, preset_headersMfc)))
 
@@ -64,7 +60,6 @@ if __name__ == "__main__":
     useHeaders = list(headerMap.values())
     useHeadersMfc = list(headerMapMfc.values())
     
-
     # Read and concatenate all datalog files
     print("\nReading datalog files...")
     datalog_chunks = []
@@ -113,6 +108,7 @@ if __name__ == "__main__":
         raise ValueError("No MFC files were successfully read.")
     
     dfMfc = pd.concat(mfc_chunks, ignore_index=True)
+    print(dfMfc.head())
     print(f"Combined MFC: {len(dfMfc)} rows")
 
     # Add additional columns
@@ -122,6 +118,8 @@ if __name__ == "__main__":
 
     df = df.reindex(columns=output_headers)
     dfMfc = dfMfc.reindex(columns=preset_headersMfc)
+
+    print(dfMfc.head())
 
     # Determine output paths using Data Pack Name
     datalog_output = raw_data_dir / f"{data_pack_name}"
@@ -137,7 +135,21 @@ if __name__ == "__main__":
 
     # Store paths in state for downstream processing
     set_state(datalog_output, mfc_output)
-    print("\nProcessing complete!")
+    print("\nStep 1 complete! Starting data cleaning and finalization...\n")
+    
+    # Automatically run loadMappeddata.py
+    loadmappeddata_script = Path(__file__).parent / "loadMappeddata.py"
+    result = subprocess.run(
+        [sys.executable, str(loadmappeddata_script)],
+        capture_output=False,
+        text=True
+    )
+    
+    if result.returncode == 0:
+        print("\n✅ All processing complete! Final data packs are ready.")
+    else:
+        print(f"\n⚠️ Step 2 encountered an error. Check output above for details.")
+        sys.exit(result.returncode)
 
    
 

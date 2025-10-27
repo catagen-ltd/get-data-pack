@@ -1,7 +1,7 @@
 {
-    "Folder Path": "C:\LocalOnly\Data packs raw data",
+    "Folder Path": "C:/LocalOnly/Data packs raw data/Raw Data_021025",
 
-    "Data Pack Name": "SCA005_SCA006_AgeingTuning_240925",
+    "Data Pack Name": "SCA005_SCA006_AgeingTuning_021025",
 
     "Datalog columns": [
             0,
@@ -38,6 +38,7 @@
             57,
             58,
             59,
+            105,
             106,
             107,
             108,
@@ -45,8 +46,7 @@
             110,
             111,
             112,
-            113,
-            114
+            113
         ],
     "Datalog names": [
     "Date/Time",
@@ -94,7 +94,7 @@
     "NO2 Concentration (ppm)"
     ],
 
-    "MFC columns": [0, 2, 3, 11, 8, 10, 4, 13, 14, 22, 24, 21, 15],
+    "MFC columns": [0, 2, 3, 11, 8, 10, 4, 13, 14, 22, 19, 21, 15],
 
     "MFC names": [
     "Date/Time",
@@ -118,7 +118,9 @@
                           "006 Bed 5 Circumference Machine Side (°C)": "006 Bed 5 Circumference Door Side (°C)"},
     
     
-
+    "Excluded Columns": ["005 Bed 5 Circumference Machine Side (°C)",
+                        "006 Bed 2 Circumference Machine Side (°C)",
+                        "006 Bed 5 Circumference Machine Side (°C)"]
 
     
 }

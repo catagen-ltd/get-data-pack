@@ -1,4 +1,5 @@
-from functions import get_state_filepath, get_state_mfc_filepath, deduplicate_timestamps, replace_constant_numeric_columns
+from functions import (get_state_filepath, get_state_mfc_filepath, deduplicate_timestamps,
+                        replace_constant_numeric_columns, exclude_columns)
 import pandas as pd
 import json
 from pathlib import Path
@@ -74,9 +75,16 @@ if __name__ == "__main__":
     dfMfc = replace_constant_numeric_columns(dfMfc)
     df = replace_constant_numeric_columns(df)
 
+    ##excluding specified columns 
+    excluded_columns = config.get("Excluded Columns", [])
+    if excluded_columns:
+        print("excluding columns")
+        df = exclude_columns(df, excluded_columns)
+        dfMfc = exclude_columns(dfMfc, excluded_columns)
+
     # Define final output paths using Data Pack Name
     datalog_final = raw_data_dir / f"{data_pack_name}_DataPack_final.csv"
-    mfc_final = raw_data_dir / f"{data_pack_name}_MFC_final.csv"
+    mfc_final = raw_data_dir / f"{data_pack_name}_MFC_DataPack_final.csv"
     
     dfMfc.to_csv(mfc_final, index=False)
     df.to_csv(datalog_final, index=False)

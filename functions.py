@@ -1,10 +1,9 @@
+from __future__ import annotations
+
 from pathlib import Path
 import json
 import pandas as pd 
-from typing import Dict, List
-from typing import Iterable
-from __future__ import annotations
-from typing import NamedTuple
+from typing import Dict, List, Iterable, NamedTuple
 
 
 
@@ -190,6 +189,26 @@ def build_output_headers(base_headers: List[str], additions: Dict[str, str]) -> 
         ref_index = ordered.index(reference)
         ordered.insert(ref_index + 1, new_col)
     return ordered
+
+
+def exclude_columns(df: pd.DataFrame, excluded_columns: List[str]) -> pd.DataFrame:
+    """Replace all data in specified columns with hyphens.
+    
+    Args:
+        df: The DataFrame to process.
+        excluded_columns: List of column names to replace with hyphens.
+    
+    Returns:
+        DataFrame with excluded columns filled with hyphens.
+    """
+    result = df.copy()
+    
+    for col in excluded_columns:
+        if col in result.columns:
+            result[col] = "-"
+    
+    return result
+
 
 def replace_constant_numeric_columns(df: pd.DataFrame, values: Iterable[float] = CONSTANT_SENTINELS) -> pd.DataFrame:
     """Replace numeric columns that are entirely one of the sentinel values with hyphens."""
