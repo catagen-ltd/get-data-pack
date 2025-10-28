@@ -40,6 +40,21 @@ e.g     {"005 Bed 2 Circumference Machine Side (°C)": "005 Bed 2 Circumference 
         "006 Bed 2 Circumference Machine Side (°C)",
         "006 Bed 5 Circumference Machine Side (°C)"]
 
+10. Running the code:
+        1. You can go to the "run_DataPackTool.bat" file in vscode and hit the
+        run button when on this file (run button at the top leftish, or the play arrow which
+        is usually in the top right)
+        2. You could also enter in the terminal below "run_DataPackTool.bat"
+        3.If you prefer to run commands manually:
+
+            ```powershell
+            # Activate the virtual environment
+            venv\Scripts\activate
+
+            # Run the tool
+            python df_readAndmap.py
+            ```
+
 
 #Notes on json file formatting:
 #these inputs are in Key:value pairs (the values can be a list, map, single value
