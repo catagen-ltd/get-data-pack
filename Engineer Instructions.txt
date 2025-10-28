@@ -1,0 +1,50 @@
+Engineer Instructions:
+
+1. Go to inputs.json file (you can open this in this vscode IDE)
+
+2."Folder Path": Input the path to the folder with your raw data 
+    #ensure that your filepath has "/" not "\"
+    #only have datalog and mfc raw data in the folder 
+
+3."Data Pack Name": The name for your data pack
+
+4."Datalog columns": The list of the datalog columns in the order you want
+  them to appear in the datapack
+  #for reference Column A == 0
+  #ensure the format is correct e.g [0,2,3,4,etc]
+  #its fine if this format extends vertically as opposed to 
+  horizontally
+
+5."Datalog names": Enter the header names, ensure he order matches your
+    Datalog Columns 
+    #ensure format is correct e.g ["Date/Time","Flow (g/s)","005 Inlet Analogue ETAS 1 (-)",]
+    #its fine if this format extends vertically as opposed to 
+    horizontally
+
+6."MFC Columns": same process as for Datalog Columns
+
+7."MFC names": same process as for Datalog names
+
+8."Additional Columns": These are the column names that you want appended to your
+datapack with hyphens in the datacolumn, this is used to display additional unused tcs etc.
+The format is {"New column name":"name of column you want the new column inserted beside"}
+e.g     {"005 Bed 2 Circumference Machine Side (°C)": "005 Bed 2 Circumference Door Side (°C)",
+        "005 Bed 5 Circumference Machine Side (°C)": "005 Bed 5 Circumference Door Side (°C)",
+        "006 Bed 2 Circumference Machine Side (°C)": "006 Bed 2 Circumference Door Side (°C)",
+        "006 Bed 5 Circumference Machine Side (°C)": "006 Bed 5 Circumference Door Side (°C)"}
+
+9."Excluded Columns": These are any columns that you want to ensure have hyphens in the
+ data columns 
+ Just enter the exact column name (must match the header name previously given)
+ format: ["005 Bed 5 Circumference Machine Side (°C)",
+        "006 Bed 2 Circumference Machine Side (°C)",
+        "006 Bed 5 Circumference Machine Side (°C)"]
+
+
+#Notes on json file formatting:
+#these inputs are in Key:value pairs (the values can be a list, map, single value
+    etc)
+#ensure there is a comma after the value or list of values etc before going onto the next
+key/input name 
+#for "Additional columns the bracket is {} not [] 
+#the rest are all either single values or use []
